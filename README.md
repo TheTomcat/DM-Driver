@@ -41,6 +41,7 @@ Honestly, this is a rough first draft. Lots of bugs, lots of features to impleme
 - [ ] Support image hashing to detect duplicates, moved images, similar images etc
 - [ ] Properly implement sessions
 - [ ] Force OBS reload, maybe via websockets?
+- [ ] The whole focus thing is broken, will need to be fixed. This was meant to allow the user to select a point on the image that is a focal point, so the panning will start at that point at an appropriate zoom. The calculations are all off, and I need to sit down to fix them. 
 
 ## Disclaimer
 I'm untrained in all aspects of this, so there are lots of bad practices here. There is zero security built in, and this app will have full run of your system so use at your own risk. 

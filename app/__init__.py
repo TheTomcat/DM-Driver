@@ -12,6 +12,7 @@ app = Flask(__name__)
 db = Alchemical()
 migrate = Migrate()
 
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -20,15 +21,20 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
 
     from app.cli import cli
+
     app.register_blueprint(cli)
     from app.gallery import gallery
+
     app.register_blueprint(gallery)
     from app.manager import manager
+
     app.register_blueprint(manager)
     from app.loading import loading
+
     app.register_blueprint(loading)
     from app.api import api
-    app.register_blueprint(api, url_prefix='/api')
+
+    app.register_blueprint(api, url_prefix="/api")
 
     @app.after_request
     def after_request(response):

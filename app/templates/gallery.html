@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Gallery</h1>
 <form id="sbmt">
-    <div class="autocomplete" >
+    <div class="autocomplete">
         <input autocomplete="off" id="searchbar" name="tagname" placeholder="Search for Tags" />
     </div>
 </form>
@@ -24,24 +24,24 @@
     // Load the tags from the server
 
     updateGallery = () => {
-        {# Array.from(gallery).forEach((element) => {
+        /* Array.from(gallery).forEach((element) => {
             console.log(element)
             element.classList.add('deleted')
             element.addEventListener('transitionend', (e) => {
                 e.target.remove();
             })
-        }) #}
-        gallery.replaceChildren([]); 
-        
+        }) */
+        gallery.replaceChildren([]);
+
         if (searchTags.length == 0) return;
         console.log(searchTags);
         apiGetImageTagMatch(searchTags.map(tag => tag.id))
-        .then(({images, tag_list}) => {
-            images.forEach(putImageInGallery)
-        })
+            .then(({ images, tag_list }) => {
+                images.forEach(putImageInGallery)
+            })
     }
 
-    putImageInGallery = ({image_id, matches, tags}) => {
+    putImageInGallery = ({ image_id, matches, tags }) => {
         imdiv = document.createElement('article')
         imdiv.classList.add('gallery-element');
         image = document.createElement('img')
@@ -75,12 +75,12 @@
         const tagName = data.get('tagname');
         searchTags = [...searchTags, tagName];
         renderTags();
-        e.target.children[0].value="";
+        e.target.children[0].value = "";
     }
 
     createTagOnScreen = (tagName) => {
         const newTag = document.createElement("a");
-        newTag.setAttribute('role',"button");
+        newTag.setAttribute('role', "button");
         newTag.href = "#";
         newTag.classList.add("tagbutton");
         newTag.dataset.tag = tagName;
@@ -100,7 +100,7 @@
     renderTags = () => {
         tagContainer.replaceChildren([]);
         searchTags.forEach(tag => createTagOnScreen(tag.tag))
-        
+
     }
     const searchForm = document.querySelector('#sbmt');
     searchForm.addEventListener('submit', handleSubmit);

@@ -9,44 +9,55 @@ import numpy as np
 
 
 def im_hash(image: Image, hash_size=8):
-    image = image.convert('L')
-    image = image.resize((hash_size+1, hash_size), Image.NEAREST)
+    image = image.convert("L")
+    image = image.resize((hash_size + 1, hash_size), Image.NEAREST)
     arr = np.array(image)
     diff = arr[:, 1:] > arr[:, :-1]
-    return sum([2 ** i for (i, v) in enumerate(diff.flatten()) if v])
+    return sum([2**i for (i, v) in enumerate(diff.flatten()) if v])
+
 
 def hamming(h1: int, h2: int) -> int:
     x = h1 ^ h2
     dist = 0
-    while (x > 0):
+    while x > 0:
         dist += x & 1
         x >>= 1
     return dist
+
 
 # https://github.com/JohannesBuchner/imagehash This might be a better option?
 
 # https://pyimagesearch.com/2017/11/27/image-hashing-opencv-python/
 
+
 def dhash(image, hashSize=8):
-	# resize the input image, adding a single column (width) so we
-	# can compute the horizontal gradient
-	resized = cv2.resize(image, (hashSize + 1, hashSize))
-	# compute the (relative) horizontal gradient between adjacent
-	# column pixels
-	diff = resized[:, 1:] > resized[:, :-1]
-	# convert the difference image to a hash
-	return sum([2 ** i for (i, v) in enumerate(diff.flatten()) if v])
+    # resize the input image, adding a single column (width) so we
+    # can compute the horizontal gradient
+    resized = cv2.resize(image, (hashSize + 1, hashSize))
+    # compute the (relative) horizontal gradient between adjacent
+    # column pixels
+    diff = resized[:, 1:] > resized[:, :-1]
+    # convert the difference image to a hash
+    return sum([2**i for (i, v) in enumerate(diff.flatten()) if v])
+
 
 def needle_haystack_search():
-
     ap = argparse.ArgumentParser()
-    ap.add_argument("-a", "--haystack", required=True,
-        help="dataset of images to search through (i.e., the haytack)")
-    ap.add_argument("-n", "--needles", required=True,
-        help="set of images we are searching for (i.e., needles)")
+    ap.add_argument(
+        "-a",
+        "--haystack",
+        required=True,
+        help="dataset of images to search through (i.e., the haytack)",
+    )
+    ap.add_argument(
+        "-n",
+        "--needles",
+        required=True,
+        help="set of images we are searching for (i.e., needles)",
+    )
     args = vars(ap.parse_args())
 
-    # grab the paths to both the haystack and needle images 
+    # grab the paths to both the haystack and needle images
     print("[INFO] computing hashes for haystack...")
     haystackPaths = list(paths.list_images(args["haystack"]))
     needlePaths = list(paths.list_images(args["needles"]))
@@ -78,11 +89,14 @@ def needle_haystack_search():
         l = haystack.get(imageHash, [])
         l.append(p)
         haystack[imageHash] = l
-        
+
     # show timing for hashing haystack images, then start computing the
     # hashes for needle images
-    print("[INFO] processed {} images in {:.2f} seconds".format(
-        len(haystack), time.time() - start))
+    print(
+        "[INFO] processed {} images in {:.2f} seconds".format(
+            len(haystack), time.time() - start
+        )
+    )
     print("[INFO] computing hashes for needles...")
 
     for p in needlePaths:
@@ -105,7 +119,7 @@ def needle_haystack_search():
             # images, remove it
             if b in BASE_PATHS:
                 BASE_PATHS.remove(b)
-            
+
     # display directories to check
     print("[INFO] check the following directories...")
     # loop over each subdirectory and display it
