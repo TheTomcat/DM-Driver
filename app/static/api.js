@@ -7,8 +7,16 @@ catchError = (response) => {
 }
 
 apiCall = (url, method, payload) => {
-    return fetch(url, {method, body:payload}).
-    then((response) => {
+    options = {method};
+    if (method == "POST" && payload) {
+        options.body = JSON.stringify(payload);
+        options.headers = {
+            "Accept":"*/*",
+            "Content-Type":"application/json"
+        }
+    }
+    return fetch(url, options)
+    .then((response) => {
         return response.json();
     }).then(response => {
         return catchError(response);
@@ -44,9 +52,12 @@ apiGetMessageById = (message_id) => {
     
 }
 
-apiGetRandomMessage = (callback) => {
+apiGetRandomMessage = () => {
     return apiCall(`/api/message`)
-    
+}
+
+apiCreateNewMessage = (message) => {
+    return apiCall(`/api/message`, "POST", {message})
 }
 
 apiGetImageById = (image_id) => {

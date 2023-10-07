@@ -72,7 +72,8 @@ def get_random_message():
 
 @api.post('/message')
 def new_message():
-    data = request.json()
+    data = request.json
+    print(data)
     msg = data.get('message')
     if not msg:
         return fail(401, "Invalid request")
