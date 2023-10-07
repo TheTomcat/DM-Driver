@@ -7,6 +7,7 @@
     <title>DM Driver{% if title %} - {{title}}{% endif %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
     <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}" />
+    <script src="{{url_for('static', filename='kenku.js')}}"></script>
     {% block styles %}
     {% endblock %}
 </head>
@@ -27,9 +28,12 @@
         </ul>
     </nav>
     <hr>
+    {% block precontent %}
+    {% endblock %}
     <div class="content">
         {% block content %} {% endblock %}
     </div>
+
     {% block script %}{% endblock %}
 </body>
 

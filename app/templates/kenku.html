@@ -1,0 +1,241 @@
+<div class="menu">
+    <div class="title">KENKU</div>
+    <div class="kenku-nav">
+        <div class="nav-element">
+            <div class="connection" data-placement="left"></div>
+            <h4>Playlist</h4>
+            <details id="playlistlist" role="list">
+                <summary aria-haspopup="listbox">Playlist</summary>
+                <ul id="playlists" role="listbox"></ul>
+            </details>
+            <div class="playlist">
+                <span class="playlist-element">Select a playlist...</span>
+            </div>
+            <div class="play-controls">
+                <a id="prev" role="button secondary" href="#">&#x23EE;</a>
+                <a id="play" role="button secondary" href="#">&#x23EF;</a> <!-- play:23f5 pause:23f8 playpause: 23ef -->
+                <a id="next" role="button secondary" href="#">&#x23ED;</a>
+            </div>
+            <div class="play-controls">
+                <a id="prev" role="button secondary" href="#">&#x23EE;</a>
+                <a id="play" role="button secondary" href="#">&#x23EF;</a> <!-- play:23f5 pause:23f8 playpause: 23ef -->
+                <a id="next" role="button secondary" href="#">&#x23ED;</a>
+            </div>
+            <label for="range">Volume
+                <input type="range" min="0" max="100" value="50" id="volume" name="range">
+            </label>
+        </div>
+        <div class="nav-element">
+            <h4>Soundboard</h4>
+            <details id="soundboardlist" role="list">
+                <summary aria-haspopup="listbox">Soundboards</summary>
+                <ul id="soundboards" role="listbox"></ul>
+            </details>
+            <div class="soundboard-container">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const soundboardSoundContainer = document.querySelector('.soundboard-container');
+    const soundboardList = document.getElementById('soundboards');
+    const playlistList = document.getElementById('playlists');
+    const playlistContainer = document.querySelector('.playlist');
+    const connection = document.querySelector('.connection');
+    const volume = document.getElementById('volume');
+    const prev = document.getElementById('prev');
+    const play = document.getElementById('play');
+    const next = document.getElementById('next');
+
+    var soundboards = [];
+    var sounds = [];
+    var activeSounds = []; //soundboard state
+    var playlists = [];
+    var tracks = [];
+    var playlistState = undefined;
+    var currentlyPlaying = undefined;
+    var maintainConnection = true;
+
+    getOrCreate = (elementid, type) => {
+        let element = document.getElementById(elementid);
+        if (element === null) {
+            element = document.createElement(type);
+            element.setAttribute('id', elementid);
+        }
+        return element;
+    }
+
+    manageConnectionStatus = (connected) => {
+        if (connected === undefined) {
+        } else if (connected) {
+            connection.classList.add("connected");
+            connection.classList.remove("disconnected");
+            connection.dataset.tooltip = "Connected";
+        } else {
+            connection.classList.remove("connected");
+            connection.classList.add("disconnected");
+            connection.dataset.tooltip = "Disconnected. Click to attempt reconnection";
+        }
+    }
+
+    toggleActiveSound = (e) => {
+        soundId = e.target.dataset.id;
+        console.log(soundId);
+        e.target.classList.toggle("active")
+        if (e.target.classList.contains("active")) {
+            kenkuPlaySoundboard(soundId).then(response => {
+                //TODO handleReponse
+            })
+        } else {
+            kenkuStopSoundboard(soundId).then(response => {
+                //TODO handleReponse
+            })
+        }
+    }
+
+    hideshowSounds = (e) => {
+        soundboardId = e.target.dataset.id;
+        console.log(soundboardId);
+        console.log(e.target.checked)
+    }
+
+    addSoundToScreen = (sound) => {
+        let soundElement = getOrCreate(`sound-${sound.id}`, 'div');
+        soundElement.classList.add('soundboard-element');
+        soundElement.innerText = sound.title;
+        //soundElement.setAttribute('id', `sound-${sound.id}`)
+        soundElement.setAttribute('data-id', sound.id);
+        soundElement.setAttribute('data-loop', sound.loop);
+        soundElement.setAttribute('data-volume', sound.volume);
+        soundElement.setAttribute('data-status', 'undefined');
+        soundElement.addEventListener('click', toggleActiveSound);
+        soundboardSoundContainer.appendChild(soundElement);
+    }
+    addSoundboardToScreen = (soundboard) => {
+        let soundboardElement = getOrCreate(`soundboard-${soundboard.id}`, 'li');
+        let label = document.createElement('label');
+        let input = document.createElement('input');
+        input.setAttribute('type', 'checkbox');
+        input.setAttribute('data-id', soundboard.id);
+        input.setAttribute('id', soundboard.id)
+        input.setAttribute('name', 'soundboard');
+        input.setAttribute('checked', true);
+        let text = document.createTextNode(soundboard.title);
+        label.appendChild(input);
+        label.appendChild(text);
+        soundboardElement.appendChild(label);
+        input.addEventListener('change', hideshowSounds);
+        soundboardList.appendChild(soundboardElement);
+    }
+
+    swapPlaylist = (e) => {
+        playlistContainer.replaceChildren([]);
+        playlist = playlists.find(playlist => playlist.id == e.target.dataset.id)
+        playlist.tracks.forEach(trackid => {
+            track = tracks.find(t => t.id === trackid);
+            addTrackToScreen(track);
+            console.log(track);
+        });
+        document.getElementById('playlistlist').removeAttribute("open")
+        document.getElementById('playlistlist').children[0].innerText = playlist.title;
+    }
+
+    addPlaylistToScreen = (playlist) => {
+        let playlistElement = getOrCreate(`playlist-${playlist.id}`, 'li');
+        //let label = document.createElement('label');
+        let a = document.createElement('a');
+        a.setAttribute('data-id', playlist.id);
+        a.setAttribute('data-name', playlist.title)
+        a.innerText = playlist.title;
+        playlistElement.appendChild(a);
+        playlistElement.addEventListener('click', swapPlaylist);
+        playlistList.appendChild(playlistElement);
+    }
+    addTrackToScreen = (track) => {
+        let span = document.createElement('span')
+        span.classList.add('playlist-element');
+        span.innerText = track.title
+        span.dataset.id = track.id;
+        span.addEventListener('click', (e) => {
+            kenkuPlayPlaylist(e.target.dataset.id).then((response) => {
+                // handle
+            })
+        })
+        playlistContainer.appendChild(span);
+    }
+
+    updateAndActivateSoundElement = (sound) => {
+        let element = document.getElementById(`sound-${sound.id}`);
+        element.classList.add("active");
+    }
+    deactivateSoundElement = (sound) => {
+        let element = document.getElementById(`sound-${sound.id}`);
+        element.classList.remove("active");
+    }
+
+
+    // Load the data from the soundboard
+    kenkuGetSoundboard().then(response => {
+        soundboards = response.soundboards;
+        sounds = response.sounds;
+
+        soundboards.forEach(addSoundboardToScreen);
+        sounds.forEach(addSoundToScreen);
+    });
+
+    //Load the playlist data
+    kenkuGetPlaylist().then(response => {
+        playlists = response.playlists;
+        tracks = response.tracks;
+        playlists.forEach(addPlaylistToScreen);
+        kenkuGetPlaylistState().then(response => {
+            volume.value = response.volume;
+            // TODO Update the playlist 
+        })
+    })
+
+
+    volume.addEventListener('change', (e) => {
+        console.log(e);
+        kenkuPlaylistSetVolume(parseInt(e.target.value) / 100).then(response => {
+            // ? handle response
+        })
+    })
+
+    play.addEventListener('change', (e) => {
+        kenkuResumePlaylist()
+            .then(response => {
+                // TODO set now_playing to true?? also need to check current state before doing this?
+            })
+    })
+    prev.addEventListener('click', (e) => {
+        kenkuPlaylistPreviousTrack().then(response => { })
+    })
+    next.addEventListener('click', (e) => {
+        kenkuPlaylistNextTrack().then(response => { })
+    })
+
+    // Close lists after the menu is closed
+    document.querySelector('.menu').addEventListener('mouseleave', (e) => {
+        document.getElementById('soundboardlist').removeAttribute('open');
+        document.getElementById('playlistlist').removeAttribute('open');
+    })
+
+    // Refresh the soundboard state every 3 seconds, can stop by marking 
+    // maintainConnection as false.
+    updateSoundboardState = () => {
+        kenkuGetSoundboardState().then(response => {
+            activeSounds = response.sounds;
+            sounds.forEach(deactivateSoundElement);
+            activeSounds?.forEach(updateAndActivateSoundElement);
+        })
+            .catch(exception => {
+                console.error(exception)
+                maintainConnection = false;
+            });
+        manageConnectionStatus(maintainConnection);
+        if (maintainConnection) setTimeout(updateSoundboardState, 5000);
+    }
+
+    updateSoundboardState();
+</script>

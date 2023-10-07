@@ -61,6 +61,16 @@
     color: #ffffff;
 }
 
+.autocomplete input {
+    background-image: var(--icon-search);
+    padding-inline-start: calc(var(--form-element-spacing-horizontal) + 1.75rem);
+    border-radius: 5rem;
+    background-image: var(--icon-search);
+    background-position: center left 1.125rem;
+    background-size: 1rem auto;
+    background-repeat: no-repeat;
+}
+
 @keyframes slide-up {
     0% {
         opacity: 0;
@@ -130,3 +140,215 @@
     padding: 0.5rem;
     font-size: small;
 }
+
+/* Start: KENKU MENU STYLES https://codepen.io/mkurapov/pen/WwVvZy/ */
+.menu {
+    font-weight: 100;
+    background: rgb(24, 35, 44);
+    width: 300px;
+    height: 100%;
+    padding-left: 50px;
+    position: fixed;
+    z-index: 100;
+    -webkit-box-shadow: -3px 0px 5px 0px rgba(0, 0, 0, 0.2);
+    box-shadow: -3px 0px 5px 0px rgba(0, 0, 0, 0.2);
+    right: -250px;
+    transition: all 0.3s;
+    -webkit-transition: all 0.3s;
+    color: #222;
+}
+
+.menu:hover,
+.menu:focus,
+.menu:active {
+    transform: translate3d(-250px, 0, 0);
+    animation-timing-function: 1s ease-in;
+}
+
+.menu .title {
+    top: 50%;
+    position: absolute;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    transform: rotate(270deg);
+    left: 10px;
+    font-weight: 800;
+    font-size: 15px;
+    color: #C0DCF0;
+    transition: color 0.3s;
+}
+
+.menu:hover .title {
+    color: #73828c;
+    transition: color 0.3s;
+}
+
+.menu .kenku-nav {
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    font-weight: 100;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-start;
+    padding-top: 1rem;
+    padding-right: 0.5rem;
+    width: 80%;
+}
+
+.menu .kenku-nav div.nav-element {
+    padding-bottom: 30px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #aaa;
+}
+
+.menu .kenku-nav div.nav-element h4 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.menu .kenku-nav .playlist {
+    overflow-y: scroll;
+    border: 1px solid aliceblue;
+    border-radius: 5px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+}
+
+.playlist .playlist-element {
+    border-bottom: 1px solid rgba(200, 200, 200, 0.7);
+    padding: 0 10px 0 10px;
+    cursor: pointer;
+}
+
+.menu .kenku-nav div.nav-element .play-controls {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.play-controls a {
+    width: 50px;
+    padding: 5px;
+    border-radius: 0;
+    border: 1px solid #374956;
+    text-align: center;
+
+}
+
+.play-controls a:first-of-type {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.play-controls a:last-of-type {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.kenku-nav div.nav-element .soundboard-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.soundboard-container .soundboard-element {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #374956;
+    border-radius: 5px;
+    font-size: smaller;
+    text-align: center;
+    transition: background-color 0.5s;
+}
+
+.soundboard-element.active {
+    background-color: #edf0f3;
+    color: #000;
+    transition: background-color 0.5s;
+}
+
+.soundboard-element.invisible {
+    display: none;
+}
+
+.menu .kenku-nav a {
+    display: block;
+    text-decoration: none;
+    /* color: inherit; */
+    transition: all 0.3s;
+    -webkit-transition: all 0.3s;
+}
+
+.menu .kenku-nav a:hover {
+    color: #aaa;
+}
+
+@keyframes pulse-green {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(51, 245, 138, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(51, 245, 138, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(51, 245, 138, 0);
+    }
+}
+
+@keyframes pulse-red {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+    }
+}
+
+.connection {
+    position: absolute;
+    right: 0;
+    border-radius: 50%;
+    margin: 10px;
+    height: 20px;
+    width: 20px;
+    transform: scale(1);
+    background: rgba(255, 177, 66, 1);
+    box-shadow: 0 0 0 0 rgba(255, 177, 66, 1);
+}
+
+.connection.connected {
+    background: rgba(51, 245, 138, 1);
+    box-shadow: 0 0 0 0 rgba(51, 245, 138, 1);
+    animation: pulse-green 2s infinite;
+}
+
+.connection.disconnected {
+    background: rgba(255, 82, 82, 1);
+    box-shadow: 0 0 0 0 rgba(255, 82, 82, 1);
+    animation: pulse-red 2s infinite;
+}
+
+/* END KENKU MENU STYLES */

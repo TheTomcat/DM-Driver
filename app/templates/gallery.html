@@ -11,6 +11,10 @@
 <div class="gallery"></div>
 {% endblock %}
 
+{% block precontent %}
+{% include 'kenku.html' %}
+{% endblock %}
+
 {% block script %}
 <script src="{{url_for('static', filename='api.js')}}"></script>
 <script src="{{url_for('static', filename='autocomplete.js')}}"></script>

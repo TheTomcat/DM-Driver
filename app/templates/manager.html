@@ -2,11 +2,10 @@
 
 {% block styles %}
 <style>
-    dialog {
+    dialog.noblur {
         opacity: 1;
-        backdrop-filter: blur(0);
-        background-color: rgba(255, 255, 255, 0);
-
+        backdrop-filter: none;
+        background-color: rgba(255, 255, 255, 0) !important;
     }
 
     dialog article {
@@ -20,7 +19,7 @@
 {% endblock %}
 
 {% block content %}
-<dialog open>
+<dialog class="noblur" open>
     <article>
         <h3>Tag the image: {{image.filename}}</h3>
         <div>

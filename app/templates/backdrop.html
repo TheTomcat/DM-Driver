@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="{{url_for('static', filename='api.js')}}"></script>
+  <script src="{{url_for('static', filename='kenku.js')}}"></script>
   <script src="{{url_for('static', filename='autocomplete.js')}}"></script>
   <style>
     body,
@@ -171,6 +172,8 @@
       % endblock %
     }
   </style>
+  {% block styles %}
+  {% endblock %}
 </head>
 
 <body>

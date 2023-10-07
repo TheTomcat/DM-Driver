@@ -149,6 +149,7 @@ def get_images_by_best_tag_match():
         .where(image_tags.c.tag_id.in_(tags))
         .group_by(image_tags.c.image_id)
         .order_by(text("match DESC"))
+        .limit(12)
     )
     return build_success(
         {
