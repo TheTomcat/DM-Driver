@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DM Driver{% if title %} - {{title}}{% endif %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+    <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}" />
+    <style>
+        {% block styles %}
+        {% endblock %}
+    </style>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li></li>
+            <li>{{title|default("DM Driver")}}</li>
+        </ul>
+        <ul>
+            <li>
+            <a class="secondary" href="/manager/1">Manager</a>
+        </li><li>
+            <a class="secondary" href="/gallery">Gallery</a>
+        </li>
+        </ul>
+    </nav>
+    <hr>
+    <div class="content">
+        {% block content %} {% endblock %}
+    </div>
+{% block script %}{% endblock %}
+</body>
+
+</html>

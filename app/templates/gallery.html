@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Gallery</h1>
+<form id="sbmt">
+    <div class="autocomplete" >
+        <input autocomplete="off" id="searchbar" name="tagname" placeholder="Search for Tags" />
+    </div>
+</form>
+<div class="tags"></div>
+<div class="gallery"></div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='api.js')}}"></script>
+<script src="{{url_for('static', filename='autocomplete.js')}}"></script>
+<script>
+    const tagContainer = document.querySelector('.tags');
+    const gallery = document.querySelector(".gallery")
+    const searchBar = document.getElementById("searchbar")
+    var searchTags = [];
+    var allTags = [];
+
+    // Load the tags from the server
+
+    updateGallery = () => {
+        {# Array.from(gallery).forEach((element) => {
+            console.log(element)
+            element.classList.add('deleted')
+            element.addEventListener('transitionend', (e) => {
+                e.target.remove();
+            })
+        }) #}
+        gallery.replaceChildren([]); 
+        
+        if (searchTags.length == 0) return;
+        console.log(searchTags);
+        apiGetImageTagMatch(searchTags.map(tag => tag.id))
+        .then(({images, tag_list}) => {
+            images.forEach(putImageInGallery)
+        })
+    }
+
+    putImageInGallery = ({image_id, matches, tags}) => {
+        imdiv = document.createElement('article')
+        imdiv.classList.add('gallery-element');
+        image = document.createElement('img')
+        image.src = `/api/image/${image_id}/thumb`
+        imdiv.appendChild(image)
+        footer = document.createElement('div')
+        footer.classList.add('overlay')
+        footer.innerHTML = `
+            <a class="smallbutton" href="/backdrop?image=${image_id}" role="button">Backdrop</a>&nbsp;
+            <a class="smallbutton" style="float: right;" href="/loading?image=${image_id}" role="button">Loading</a>`
+        imdiv.appendChild(footer);
+        gallery.appendChild(imdiv)
+    }
+
+    addTagToSearchTags = (newTag) => {
+        if (searchTags.find(tag => tag.id === newTag.id) !== undefined) return;
+        searchTags = [...searchTags, newTag];
+        renderTags();
+        updateGallery();
+    }
+
+    apiGetAllTags().then((response) => {
+        allTags = [...response];
+        autocompleteTag(searchBar, allTags, addTagToSearchTags);
+    })
+
+    handleSubmit = (e) => {
+        e.preventDefault();
+        console.log("asdf")
+        const data = new FormData(event.target);
+        const tagName = data.get('tagname');
+        searchTags = [...searchTags, tagName];
+        renderTags();
+        e.target.children[0].value="";
+    }
+
+    createTagOnScreen = (tagName) => {
+        const newTag = document.createElement("a");
+        newTag.setAttribute('role',"button");
+        newTag.href = "#";
+        newTag.classList.add("tagbutton");
+        newTag.dataset.tag = tagName;
+        newTag.innerHTML = tagName + " &#10006;";
+        newTag.addEventListener('click', handleRemoveTag)
+        tagContainer.appendChild(newTag);
+    }
+
+    handleRemoveTag = (e) => {
+        const tagName = e.target.dataset.tag;
+        console.log(tagName)
+        searchTags = searchTags.filter(tag => tag.tag != tagName);
+        renderTags();
+        updateGallery();
+    }
+
+    renderTags = () => {
+        tagContainer.replaceChildren([]);
+        searchTags.forEach(tag => createTagOnScreen(tag.tag))
+        
+    }
+    const searchForm = document.querySelector('#sbmt');
+    searchForm.addEventListener('submit', handleSubmit);
+    //getAllTags();
+</script>
+{% endblock %}

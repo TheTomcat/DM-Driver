@@ -8,6 +8,16 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 selenium = "^4.13.0"
+pillow = "^10.0.1"
+flask = "^3.0.0"
+sqlalchemy = "^2.0.21"
+flask-migrate = "^4.0.5"
+python-dotenv = "^1.0.0"
+flask-sqlalchemy = "^3.1.1"
+alchemical = "^0.7.1"
+click = "^8.1.7"
+imutils = "^0.5.4"
+opencv-python = "^4.8.1.78"
 
 
 [build-system]

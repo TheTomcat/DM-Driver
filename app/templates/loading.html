@@ -1,0 +1,23 @@
+{% extends 'backdrop.html' %}
+
+{% block content %}
+  <div class="loader">
+    <div class="inner one"></div>
+    <div class="inner two"></div>
+    <div class="inner three"></div>
+    </div>
+  <div id="fakecontent">{{message.message | safe }}</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  if (queryString.length === 0) { //.get('static') === null && urlParams.get('image') !== ) {
+    setTimeout(function(){
+    window.location.reload();
+  }, 30000);
+  }
+  
+</script>
+{% endblock %}
