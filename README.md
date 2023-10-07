@@ -19,6 +19,12 @@ The 'loading' and 'backdrop' screens show a random image and a random message. Y
 
 Sessions have a fixed url (e.g., /loading?session=1) and fix an image and a message. This is what OBS points to, so I can change the image/message that is linked to the session and, on reload, OBS will show a different screen without updating the URL. 
 
+## Usage
+Clone the repository then run the development server. I use 
+    > flask run --host=0.0.0.0
+
+Please don't use this outside of a local network that you trust. 
+
 ## Features
 ![Loading screen](images/loading.png)
 Loading screen, with animated background and digital-RPG-style messages. The backdrop is the same, without the loading spinner and the message of the day
