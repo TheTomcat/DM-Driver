@@ -1,0 +1,38 @@
+{% extends 'base.html.j2'%}
+
+{% block styles %}
+<style>
+    body,
+    html {
+        font-family: 'bookinsanity_remakeregular';
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    #image {
+        background: url('data:image/png;base64,{{imdata}}') no-repeat center center fixed;
+    }
+
+    @keyframes slowpan {
+        0% {
+            transform:translate3d({{focus.x}}px, {{focus.y}}px, 0) scale({{focus.zoom}});
+        }
+
+        50% {
+            transform: translate3d(0, 0, 0) scale(1.1);
+        }
+
+        100% {
+            transform: translate3d(400px, -200px, 0) scale(1.5);
+        }
+
+    }
+</style>
+{% endblock %}
+
+{% block backdrop %}
+<div id="image"></div>
+{% endblock %}

@@ -27,7 +27,7 @@ def loading_page():
     imdata = image.get_fullsize_image_data_base64(current_app.config["IMAGE_PATH"])
     focus = Focus(image)
     return render_template(
-        "loading.html",
+        "loading.html.j2",
         imdata=imdata,
         message=message,
         focus=focus,
@@ -53,5 +53,5 @@ def backdrop_page():
     # The background is important (vs other websites where the background is incidental)
     # Having a dark background for a few seconds doesn't look as good
     return render_template(
-        "backdrop.html", imdata=imdata, focus=focus, title="Backdrop"
+        "backdrop.html.j2", imdata=imdata, focus=focus, title="Backdrop"
     )

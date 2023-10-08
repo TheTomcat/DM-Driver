@@ -13,7 +13,7 @@ def tag_manager(id):
     b64thumb = image.get_thumbnail_image_data_base64(current_app.config["IMAGE_PATH"])
     focus = Focus(image)
     return render_template(
-        "manager.html",
+        "manager.html.j2",
         imdata=b64full,
         thumbdata=b64thumb,
         focus=focus,
@@ -24,4 +24,4 @@ def tag_manager(id):
 
 @manager.route("/gallery")
 def show_gallery():
-    return render_template("gallery.html")
+    return render_template("gallery.html.j2")

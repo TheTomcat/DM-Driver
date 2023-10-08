@@ -1,25 +1,17 @@
-{% extends 'backdrop.html' %}
+{% extends 'base.html.j2' %}
 
-{% block styles %}
-<style>
-    dialog.noblur {
-        opacity: 1;
-        backdrop-filter: none;
-        background-color: rgba(255, 255, 255, 0) !important;
-    }
+{% set active_page = 'manager' %}
+{% block nav %}
+{% include 'nav.html.j2' %}
+{% endblock nav %}
 
-    dialog article {
-        border-radius: 1rem;
-    }
+{% block kenku %}
+{% include 'kenku.html.j2' %}
+{% endblock kenku %}
 
-    dialog img {
-        width: 100%;
-    }
-</style>
-{% endblock %}
 
 {% block content %}
-<dialog class="noblur" open>
+<div class="noblur" open>
     <article>
         <h3>Tag the image: {{image.filename}}</h3>
         <div>
@@ -36,14 +28,11 @@
         <div class="tags">
         </div>
         <footer style="text-align: left;">
-            {# <a href="" role="button" class="secondary">Cancel</a> #}
-            {% if image.id > 1 %}
-            <a href="/manager/{{image.id-1}}" role="button">Previous Image</a>
-            {% endif %}
+            <a href={% if image.id<=1 %}"#"{% else %}"/manager/{{image.id-1}}"{% endif %} role="button" {% if image.id<=1 %}disabled{% endif %}>Previous Image</a>
             <a style="float: right;" href="/manager/{{image.id+1}}" role="button">Next Image</a>
         </footer>
     </article>
-</dialog>
+</div>
 {% endblock %}
 
 {% block script %}

@@ -1,0 +1,90 @@
+{% extends 'backdrop.html.j2' %}
+
+{% block content %}
+<div class="loader">
+    <div class="inner one"></div>
+    <div class="inner two"></div>
+    <div class="inner three"></div>
+</div>
+<div id="fakecontent">{{message.message | safe }}</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    const messageBox = document.getElementById('fakecontent');
+    const imageBox = document.getElementById('image');
+
+    fetchNewMessage = (messageId) => {
+        putMessageInBox = (message) => {
+            messageBox.innerHTML = message.message;
+            messageBox.dataset.id = message.message_id;
+        }
+
+        if (messageId) {
+            req = apiGetMessageById(messageId).then(putMessageInBox);
+        } else {
+            req = apiGetRandomMessage().then(putMessageInBox);
+        }
+    }
+
+    fetchNewImage = (imageId) => {
+        setImageAsBackground = (suppliedImageId) => {
+            apiGetImageById(suppliedImageId).then(image => {
+                var imageObject = new Image();
+                imageObject.src = image.url
+                imageObject.addEventListener('load', (e) => {
+                    imageBox.classList.add('transitioning');
+                    setTimeout(() => {
+                        imageBox.style.backgroundImage = `url(${image.url})`;
+                        imageBox.classList.remove('transitioning');
+                    }, 750)
+                })
+            })
+        }
+        if (imageId) {
+            setImageAsBackground(imageId);
+        } else {
+            apiGetRandomImage().then(image => setImageAsBackground(image.image_id))
+        }
+    }
+
+    updateSession = (sessionId) => {
+        apiGetSession(sessionId).then(newSession => {
+            if (newSession.image_id == session?.image_id) {
+                fetchNewImage(newSession.image_id);
+                session.image_id = newSession.image_id;
+            }
+            if (newSession.message_id == session?.message_id) {
+                fetchNewMessage(newSession.messageId);
+                session.message_id = newSession.message_id;
+            }
+        })
+    }
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var updatePageAutomatically = true;
+    var session = {}
+
+    schedulePageUpdate = (timer = 30000) => {
+        if (updatePageAutomatically) {
+            setTimeout(function () {
+                //window.location.reload();
+                if (urlParams.has('session')) {
+                    updateSession(urlParams.get('session'))
+                    return;
+                }
+                if (!urlParams.has('message')) {
+                    fetchNewMessage();
+                }
+                if (!urlParams.has('image')) {
+                    fetchNewImage();
+                }
+                schedulePageUpdate(timer);
+            }, timer);
+        }
+    }
+
+    schedulePageUpdate();
+</script>
+{% endblock %}
