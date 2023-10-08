@@ -11,6 +11,7 @@
     {% block styles %}
     {% endblock %}
 </head>
+{% set active_page = active_page | default('index') -%}
 
 <body>
     <nav class="container-fluid">
@@ -20,10 +21,10 @@
         </ul>
         <ul>
             <li>
-                <a class="secondary" href="/manager/1">Manager</a>
+                <a {% if active_page !='manager' %}class="secondary" {% endif %} href="/manager/1">Manager</a>
             </li>
             <li>
-                <a class="secondary" href="/gallery">Gallery</a>
+                <a {% if active_page !='gallery' %}class="secondary" {% endif %} href="/gallery">Gallery</a>
             </li>
         </ul>
     </nav>
