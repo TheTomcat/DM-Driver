@@ -3,5 +3,7 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "html.format.enable": false,
+    "html.format.wrapLineLength": 0
 }

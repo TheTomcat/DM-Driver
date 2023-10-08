@@ -22,41 +22,6 @@ def tag_manager(id):
     )
 
 
-# @manager.post("/manager/<id>/tags/<tag_name>")
-# def add_tag(id, tag_name):
-#     image = db.session.scalar(select(Image).where(Image.id == id))
-#     if not image:
-#         return 404
-#     tag = db.session.scalar(select(Tag).where(Tag.tag == tag_name.lower()))
-#     if not tag:
-#         tag = Tag(tag=tag_name.lower())
-#     if tag in image.tags:
-#         return "Already exists"
-#     image.tags.append(tag)
-#     db.session.add(tag)
-#     db.session.commit()
-#     return "OK"
-
-
-# @manager.get("/manager/<id>/tags")
-# def get_tags(id):
-#     image = db.session.scalar(select(Image).where(Image.id == id))
-#     if not image:
-#         return 404
-#     tags = [tag.tag for tag in image.tags]
-#     return tags
-
-
-# @manager.delete("/manager/<id>/tags/<tag_name>")
-# def remove_tag(id, tag_name):
-#     image = db.session.scalar(select(Image).where(Image.id == id))
-#     if not image:
-#         return 404
-#     tag = db.session.scalar(select(Tag).where(Tag.tag == tag_name.lower()))
-#     if not tag:
-#         return 401
-#     if tag not in image.tags:
-#         return 401
-#     image.tags.remove(tag)
-#     db.session.commit()
-#     return "OK"
+@manager.route("/gallery")
+def show_gallery():
+    return render_template("gallery.html")

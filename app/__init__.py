@@ -23,9 +23,9 @@ def create_app(config_class=Config):
     from app.cli import cli
 
     app.register_blueprint(cli)
-    from app.gallery import gallery
+    # from app.gallery import gallery
 
-    app.register_blueprint(gallery)
+    # app.register_blueprint(gallery)
     from app.manager import manager
 
     app.register_blueprint(manager)
