@@ -54,6 +54,8 @@ class Image(db.Model):
             "image_id": self.id,
             "filename": self.filename,
             "dimensions": (self.dimension_x, self.dimension_y),
+            "url": f"/api/image/{self.id}/full",
+            "thumbnail": f"/api/image/{self.id}/thumbnail",
             #'focus': (self.focus_x, self.focus_y)}
             # tags:
         }

@@ -30,12 +30,18 @@
 
   fetchNewImage = (imageId) => {
     setImageAsBackground = (suppliedImageId) => {
-      var imageObject = new Image();
-      imageObject.src = `/api/image/${suppliedImageId}/full`
-      imageObject.addEventListener('load', (e) => {
-        imageBox.style.backgroundImage = `url(/api/image/${suppliedImageId}/full)`;
+      apiGetImageById(suppliedImageId).then(image => {
+        var imageObject = new Image();
+        imageObject.src = image.url
+        imageObject.addEventListener('load', (e) => {
+          imageBox.classList.add('transitioning');
+          setTimeout(() => {
+            imageBox.style.backgroundImage = `url(${image.url})`;
+            imageBox.classList.remove('transitioning');
+          }, 750)
+        })
+        //{# if (imageObject.) #}
       })
-      //{# if (imageObject.) #}
     }
     if (imageId) {
       setImageAsBackground(imageId);

@@ -33,6 +33,13 @@
       -webkit-animation: slowpan 50s ease-in-out 0s infinite alternate;
       animation: slowpan 50s ease-in-out 0s infinite alternate;
       position: fixed;
+      opacity: 1;
+      transition: opacity 1s ease-in-out;
+    }
+
+    #image.transitioning {
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
     }
 
     #fakecontent {
