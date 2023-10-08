@@ -71,7 +71,7 @@ def remove_tag_from_image(image_id, tag_name):
     return build_success()
 
 
-@api.get("/image")
+@api.get("/image/random")
 def get_random_image():
     image = db.session.scalar(Image.get_random())
     return build_success(image.to_json())
@@ -85,7 +85,7 @@ def get_message_by_id(message_id):
     return build_success(message.to_json())
 
 
-@api.get("/message")
+@api.get("/message/random")
 def get_random_message():
     message = db.session.scalar(Message.get_random())
     return build_success(message.to_json())
@@ -146,6 +146,7 @@ def get_images_by_best_tag_match():
             raise ValueError
     except:
         return fail(400, f"Invalid tag list")
+    print(tags)
     q = (
         select(
             image_tags.c.image_id,

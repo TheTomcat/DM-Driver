@@ -50,15 +50,32 @@
     }
   }
 
+  updateSession = (sessionId) => {
+    apiGetSession(sessionId).then(newSession => {
+      if (newSession.image_id == session?.image_id) {
+        fetchNewImage(newSession.image_id);
+        session.image_id = newSession.image_id;
+      }
+      if (newSession.message_id == session?.message_id) {
+        fetchNewMessage(newSession.messageId);
+        session.message_id = newSession.message_id;
+      }
+    })
+  }
+
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   var updatePageAutomatically = true;
+  var session = {}
 
   schedulePageUpdate = (timer = 30000) => {
     if (updatePageAutomatically) {
       setTimeout(function () {
         //window.location.reload();
-        if (urlParams.has('session')) return;
+        if (urlParams.has('session')) {
+          updateSession(urlParams.get('session'))
+          return;
+        }
         if (!urlParams.has('message')) {
           fetchNewMessage();
         }

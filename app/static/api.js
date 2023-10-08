@@ -48,7 +48,7 @@ apiRemoveTagFromImage = (image_id, tag_name) => {
 }
 
 apiGetRandomImage = () => {
-    return apiCall(`/api/image`)
+    return apiCall(`/api/image/random`)
 }
 
 apiGetMessageById = (message_id) => {
@@ -57,7 +57,7 @@ apiGetMessageById = (message_id) => {
 }
 
 apiGetRandomMessage = () => {
-    return apiCall(`/api/message`)
+    return apiCall(`/api/message/random`)
 }
 
 apiCreateNewMessage = (message) => {
