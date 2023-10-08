@@ -3,6 +3,7 @@ from app import db
 from sqlalchemy import Column, Delete, String, Table, ForeignKey, select
 from sqlalchemy.sql.expression import func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from flask import url_for
 from typing_extensions import Annotated
 
 import base64
@@ -49,15 +50,21 @@ class Image(db.Model):
     def set_path(self, path):
         self.image_path = path
 
+    @property
+    def url(self):
+        return url_for("api.get_fullsize_image", image_id=self.id)
+
+    @property
+    def url_thumbnail(self):
+        return url_for("api.get_thumbnail_image", image_id=self.id)
+
     def to_json(self):
         return {
             "image_id": self.id,
             "filename": self.filename,
             "dimensions": (self.dimension_x, self.dimension_y),
-            "url": f"/api/image/{self.id}/full",
-            "thumbnail": f"/api/image/{self.id}/thumbnail",
-            #'focus': (self.focus_x, self.focus_y)}
-            # tags:
+            "url": self.url,
+            "thumbnail": self.url_thumbnail,
         }
 
 
