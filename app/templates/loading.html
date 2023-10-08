@@ -11,12 +11,59 @@
 
 {% block script %}
 <script>
+
+  const messageBox = document.getElementById('fakecontent');
+  const imageBox = document.getElementById('image');
+
+  fetchNewMessage = (messageId) => {
+    putMessageInBox = (message) => {
+      messageBox.innerHTML = message.message;
+      messageBox.dataset.id = message.message_id;
+    }
+
+    if (messageId) {
+      req = apiGetMessageById(messageId).then(putMessageInBox);
+    } else {
+      req = apiGetRandomMessage().then(putMessageInBox);
+    }
+  }
+
+  fetchNewImage = (imageId) => {
+    setImageAsBackground = (suppliedImageId) => {
+      var imageObject = new Image();
+      imageObject.src = `/api/image/${suppliedImageId}/full`
+      imageObject.addEventListener('load', (e) => {
+        imageBox.style.backgroundImage = `url(/api/image/${suppliedImageId}/full)`;
+      })
+      //{# if (imageObject.) #}
+    }
+    if (imageId) {
+      setImageAsBackground(imageId);
+    } else {
+      apiGetRandomImage().then(image => setImageAsBackground(image.image_id))
+    }
+  }
+
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
-  if (queryString.length === 0) { //.get('static') === null && urlParams.get('image') !== ) {
-    setTimeout(function () {
-      window.location.reload();
-    }, 30000);
+  var updatePageAutomatically = true;
+
+  schedulePageUpdate = (timer = 30000) => {
+    if (updatePageAutomatically) {
+      setTimeout(function () {
+        //window.location.reload();
+        if (urlParams.has('session')) return;
+        if (!urlParams.has('message')) {
+          fetchNewMessage();
+        }
+        if (!urlParams.has('image')) {
+          fetchNewImage();
+        }
+        schedulePageUpdate(timer);
+      }, timer);
+    }
   }
+
+  schedulePageUpdate();
 </script>
 {% endblock %}
