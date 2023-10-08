@@ -7,20 +7,20 @@ catchError = (response) => {
 }
 
 apiCall = (url, method, payload) => {
-    options = {method};
+    options = { method };
     if (method == "POST" && payload) {
         options.body = JSON.stringify(payload);
         options.headers = {
-            "Accept":"*/*",
-            "Content-Type":"application/json"
+            "Accept": "*/*",
+            "Content-Type": "application/json"
         }
     }
     return fetch(url, options)
-    .then((response) => {
-        return response.json();
-    }).then(response => {
-        return catchError(response);
-    }).catch(exception => console.error(exception));
+        .then((response) => {
+            return response.json();
+        }).then(response => {
+            return catchError(response);
+        }).catch(exception => console.error(exception));
 }
 
 apiGetAllTags = () => {
@@ -29,27 +29,31 @@ apiGetAllTags = () => {
 
 apiGetTagsOfImage = (image_id) => {
     return apiCall(`/api/image/${image_id}/tag`)
-    
+
 }
 
 apiApplyTagToImage = (image_id, tag_name) => {
     return apiCall(`/api/image/${image_id}/tag/${tag_name}`, "POST")
-    
+
 }
 
 apiSetImageFocalPoint = (image_id, focus_x, focus_y) => {
     return apiCall(`/api/image/${image_id}/focus?x=${focus_x}&y=${focus_y}`, "POST")
-    
+
 }
 
 apiRemoveTagFromImage = (image_id, tag_name) => {
     return apiCall(`/api/image/${image_id}/tag/${tag_name}`, "DELETE")
-    
+
+}
+
+apiGetRandomImage = () => {
+    return apiCall(`/api/image`)
 }
 
 apiGetMessageById = (message_id) => {
     return apiCall(`/api/message/${message_id}`)
-    
+
 }
 
 apiGetRandomMessage = () => {
@@ -57,25 +61,25 @@ apiGetRandomMessage = () => {
 }
 
 apiCreateNewMessage = (message) => {
-    return apiCall(`/api/message`, "POST", {message})
+    return apiCall(`/api/message`, "POST", { message })
 }
 
 apiGetImageById = (image_id) => {
     return apiCall(`/api/image/${image_id}`)
-    
+
 }
 
 apiGetImageTagMatch = (taglist) => {
-    return apiCall(`/api/image?tags=${taglist.join(',')}`) 
-    
+    return apiCall(`/api/image?tags=${taglist.join(',')}`)
+
 }
 
 apiGetSession = (session_id) => {
     return apiCall(`/api/session/${session_id}`)
-    
+
 }
 
 apiCreateSession = (image_id, message_id) => {
     return apiCall(`/api/session?image=${image_id}&message=${message_id}`, "POST")
-    
+
 }

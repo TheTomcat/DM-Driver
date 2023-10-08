@@ -71,6 +71,12 @@ def remove_tag_from_image(image_id, tag_name):
     return build_success()
 
 
+@api.get("/image")
+def get_random_image():
+    image = db.session.scalar(Image.get_random())
+    return build_success(image.to_json())
+
+
 @api.get("/message/<message_id>")
 def get_message_by_id(message_id):
     message = db.session.scalar(select(Message).where(Message.id == message_id))
