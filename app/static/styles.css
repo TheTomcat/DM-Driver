@@ -204,6 +204,15 @@ dialog img {
     background-repeat: no-repeat;
 }
 
+/* Message Styles */
+span.number {
+    position: absolute;
+}
+
+span.message {
+    padding-inline-start: calc(var(--form-element-spacing-horizontal) + 1.75rem);
+}
+
 /* Gallery Styles */
 
 @keyframes slide-up {
@@ -230,7 +239,7 @@ dialog img {
     width: 300px;
     margin-top: 0;
     transition: transform 0.3s;
-    padding: 1rem;
+    /* padding: 1rem; */
     animation: slide-up 0.4s ease;
 }
 

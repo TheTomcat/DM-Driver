@@ -4,12 +4,11 @@
         <li>{{title|default("DM Driver")}}</li>
     </ul>
     <ul>
+        {% for item in ['manager','gallery','messages','sessions'] %}
         <li>
-            <a {% if active_page !='manager' %}class="secondary" {% endif %} href="/manager/1">Manager</a>
+            <a {% if active_page !=item %}class="secondary" {% endif %} href="/{{item}}">{{item|capitalize}}</a>
         </li>
-        <li>
-            <a {% if active_page !='gallery' %}class="secondary" {% endif %} href="/gallery">Gallery</a>
-        </li>
+        {% endfor %}
     </ul>
 </nav>
 <hr>

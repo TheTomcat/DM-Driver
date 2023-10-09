@@ -76,7 +76,10 @@ apiGetImageTagMatch = (taglist) => {
 
 apiGetSession = (session_id) => {
     return apiCall(`/api/session/${session_id}`)
+}
 
+apiGetAllSessions = () => {
+    return apiCall(`/api/session`)
 }
 
 apiCreateSession = (image_id, message_id) => {

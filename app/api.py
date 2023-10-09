@@ -210,3 +210,10 @@ def create_session():
     db.session.add(s)
     db.session.commit()
     return s.to_json()
+
+
+@api.get("/session")
+def get_all_sessions():
+    sessions = select(Session)
+    all_sessions = db.session.scalars(sessions).all()
+    return build_success([session.to_json() for session in all_sessions])

@@ -18,13 +18,25 @@ image_tags = Table(
 )
 
 
+class Selector(object):
+    @classmethod
+    def get_by_id_or_random(cls, id=None):
+        if id is None:
+            return cls.get_random()
+        return select(cls).where(cls.id == id)
+
+    @classmethod
+    def get_random(cls):
+        return select(cls).order_by(func.random())
+
+
 def get_image_as_base64(path):
     with open(path, "rb") as image:
         data = base64.b64encode(image.read())
     return data.decode("ascii")
 
 
-class Image(db.Model):
+class Image(db.Model, Selector):
     __tablename__ = "images"
     id: Mapped[int] = mapped_column(primary_key=True)
     filename: Mapped[str] = mapped_column(String(30), index=True, unique=True)
@@ -43,9 +55,9 @@ class Image(db.Model):
     def get_thumbnail_image_data_base64(self, base_path):
         return get_image_as_base64(base_path + "thumbnails\\" + self.filename)
 
-    @classmethod
-    def get_random(cls):
-        return select(cls).order_by(func.random())
+    # @classmethod
+    # def get_random(cls):
+    #     return select(cls).order_by(func.random())
 
     def set_path(self, path):
         self.image_path = path
@@ -65,6 +77,49 @@ class Image(db.Model):
             "dimensions": (self.dimension_x, self.dimension_y),
             "url": self.url,
             "thumbnail": self.url_thumbnail,
+        }
+
+
+class Tag(db.Model):
+    __tablename__ = "tags"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tag: Mapped[str] = mapped_column(String(30))
+    images: Mapped[list["Image"]] = relationship(
+        back_populates="tags", secondary=image_tags
+    )
+
+    def to_json(self):
+        return {"tag_id": self.id, "tag": self.tag}
+
+
+class Message(db.Model):
+    __tablename__ = "messages"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    message: Mapped[str] = mapped_column(String(400))
+
+    @classmethod
+    def get_random(cls):
+        return select(cls).order_by(func.random())
+
+    def to_json(self):
+        return {"message_id": self.id, "message": self.message}
+
+
+class Session(db.Model):
+    __tablename__ = "sessions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(100), insert_default="")
+    image_id: Mapped[int] = mapped_column(ForeignKey("images.id"))
+    image: Mapped["Image"] = relationship("Image")
+    message_id: Mapped[int] = mapped_column(ForeignKey("messages.id"))
+    message: Mapped["Message"] = relationship("Message")
+
+    def to_json(self):
+        return {
+            "session_id": self.id,
+            "title": self.title,
+            "message_id": self.message_id,
+            "image_id": self.image_id,
         }
 
 
@@ -129,44 +184,3 @@ class Focus:
             "}"
             "}"
         )
-
-
-class Tag(db.Model):
-    __tablename__ = "tags"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    tag: Mapped[str] = mapped_column(String(30))
-    images: Mapped[list["Image"]] = relationship(
-        back_populates="tags", secondary=image_tags
-    )
-
-    def to_json(self):
-        return {"tag_id": self.id, "tag": self.tag}
-
-
-class Message(db.Model):
-    __tablename__ = "messages"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    message: Mapped[str] = mapped_column(String(400))
-
-    @classmethod
-    def get_random(cls):
-        return select(cls).order_by(func.random())
-
-    def to_json(self):
-        return {"message_id": self.id, "message": self.message}
-
-
-class Session(db.Model):
-    __tablename__ = "sessions"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    image_id: Mapped[int] = mapped_column(ForeignKey("images.id"))
-    image: Mapped["Image"] = relationship("Image")
-    message_id: Mapped[int] = mapped_column(ForeignKey("messages.id"))
-    message: Mapped["Message"] = relationship("Message")
-
-    def to_json(self):
-        return {
-            "session_id": self.id,
-            "message_id": self.message_id,
-            "image_id": self.image_id,
-        }

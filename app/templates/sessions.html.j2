@@ -1,0 +1,48 @@
+{% extends 'base.html.j2 '%}
+{% set active_page = 'sessions' %}
+
+{% block nav %}
+{% include 'nav.html.j2' %}
+{% endblock nav %}
+
+{% block kenku %}
+{# {% include 'kenku.html.j2' %} #}
+{% endblock kenku %}
+
+{% block content %}
+<h1>Sessions</h1>
+<div class="gallery"></div>
+{% endblock content %}
+
+{% block script %}
+<script>
+
+    const gallery = document.querySelector(".gallery")
+
+    // Load the tags from the server
+
+    updateSessions = () => {
+        gallery.replaceChildren([]);
+        apiGetAllSessions().then(sessions => {
+            console.log(sessions);
+            sessions.forEach(putSessionInGallery);
+        });
+    }
+
+    putSessionInGallery = (session) => {
+        imdiv = document.createElement('article')
+        imdiv.classList.add('gallery-element');
+        header = document.createElement('header')
+        header.innerHTML = session.title;
+        imdiv.appendChild(header);
+        image = document.createElement('img')
+        image.src = `/api/image/${session.image_id}/thumb`
+        imdiv.appendChild(image)
+        footer = document.createElement('footer')
+
+        imdiv.appendChild(footer);
+        gallery.appendChild(imdiv)
+    }
+    updateSessions();
+</script>
+{% endblock %}

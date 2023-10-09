@@ -31,13 +31,13 @@
         setImageAsBackground = (suppliedImageId) => {
             apiGetImageById(suppliedImageId).then(image => {
                 var imageObject = new Image();
-                imageObject.src = image.url
-                imageObject.addEventListener('load', (e) => {
-                    imageBox.classList.add('transitioning');
+                imageObject.src = image.url //download the image
+                imageObject.addEventListener('load', (e) => { //after it's loaded
+                    imageBox.classList.add('transitioning'); //swap out the old one
                     setTimeout(() => {
                         imageBox.style.backgroundImage = `url(${image.url})`;
                         imageBox.classList.remove('transitioning');
-                    }, 750)
+                    }, 750) // and 750ms later replace it with the new one
                 })
             })
         }
@@ -67,18 +67,18 @@
     var session = {}
 
     schedulePageUpdate = (timer = 30000) => {
+        if (urlParams.has('session')) timer = 5000;
         if (updatePageAutomatically) {
-            setTimeout(function () {
-                //window.location.reload();
+            setTimeout(() => {
                 if (urlParams.has('session')) {
                     updateSession(urlParams.get('session'))
-                    return;
-                }
-                if (!urlParams.has('message')) {
-                    fetchNewMessage();
-                }
-                if (!urlParams.has('image')) {
-                    fetchNewImage();
+                } else {
+                    if (!urlParams.has('message')) {
+                        fetchNewMessage();
+                    }
+                    if (!urlParams.has('image')) {
+                        fetchNewImage();
+                    }
                 }
                 schedulePageUpdate(timer);
             }, timer);
