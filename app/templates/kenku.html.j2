@@ -38,6 +38,7 @@
     </div>
 </div>
 <script>
+    const wholeMenu = document.querySelector('.menu');
     const soundboardSoundContainer = document.querySelector('.soundboard-container');
     const soundboardList = document.getElementById('soundboards');
     const playlistList = document.getElementById('playlists');
@@ -229,10 +230,14 @@
             activeSounds = response.sounds;
             sounds.forEach(deactivateSoundElement);
             activeSounds?.forEach(updateAndActivateSoundElement);
+
         })
             .catch(exception => {
+                console.log("DDD")
                 console.error(exception)
                 maintainConnection = false;
+                wholeMenu.style = "display: none;"
+
             });
         manageConnectionStatus(maintainConnection);
         if (maintainConnection) setTimeout(updateSoundboardState, 5000);

@@ -38,11 +38,15 @@ Manager to tag images
 ## ToDo
 Honestly, this is a rough first draft. Lots of bugs, lots of features to implement. Watch this space. Changes will be breaking, so download at your own risk.
 
-Longterm planned features
+Planned features
+ - [x] Properly implement sessions
+ - [ ] Way to create and modify sessions
+ - [ ] Make manager page not reload the whole page after next image is clicked
+
+Other maybe features
  - [ ] Allow multiple image directories
  - [ ] Store thumbnail path/generate on the fly? Easy but unsure if necessary
  - [ ] Support image hashing to detect duplicates, moved images, similar images etc
- - [ ] Properly implement sessions
  - [ ] Force OBS reload, maybe via websockets?
  - [ ] The whole focus thing is broken, will need to be fixed. This was meant to allow the user to select a point on the image that is a focal point, so the panning will start at that point at an appropriate zoom. The calculations are all off, and I need to sit down to fix them. 
 

@@ -56,6 +56,10 @@ apiGetMessageById = (message_id) => {
 
 }
 
+apiGetAllMessages = () => {
+    return apiCall(`/api/message`)
+}
+
 apiGetRandomMessage = () => {
     return apiCall(`/api/message/random`)
 }

@@ -13,10 +13,23 @@
 <h1>Messages</h1>
 <form id="sbmt">
     <div class="autocomplete">
-        <input autocomplete="off" id="searchbar" name="tagname" placeholder="Search for Tags" />
-        <div class="messages">
-            <div></div>
-        </div>
+        <input autocomplete="off" id="searchbar" name="tagname" placeholder="Filter Messages" />
+        <figure>
+            <table class="messages">
+                <tr>
+                    <td>1</td>
+                    <td>MessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessage</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Message</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Message</td>
+                </tr>
+            </table>
+        </figure>
     </div>
 </form>
 {% endblock content %}
@@ -27,7 +40,7 @@
 
     // Load the tags from the server
 
-    updateMessages = () => {
+    updateSessions = () => {
         apiGetAllSessions().then(sessions => {
             console.log(sessions);
             sessions.forEach(putSessionInGallery);
