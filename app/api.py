@@ -26,7 +26,8 @@ def fail(error_code, error_message):
 def get_all_tags():
     tags = select(Tag)
     all_tags = db.session.scalars(tags).all()
-    return build_success([{"tag": tag.tag, "id": tag.id} for tag in all_tags])
+    # return build_success([{"tag": tag.tag, "id": tag.id} for tag in all_tags])
+    return build_success([tag.to_json() for tag in all_tags])
 
 
 @api.get("/image/<image_id>/tag")
@@ -51,7 +52,7 @@ def add_tag_to_image(image_id: int, tag_name: str):
     image.tags.append(tag)
     db.session.add(tag)
     db.session.commit()
-    return build_success()
+    return build_success(image.to_json())
 
 
 @api.delete("/image/<image_id>/tag/<tag_name>")
@@ -68,7 +69,7 @@ def remove_tag_from_image(image_id, tag_name):
         )
     image.tags.remove(tag)
     db.session.commit()
-    return build_success()
+    return build_success(image.to_json())
 
 
 @api.get("/image/random")
@@ -83,6 +84,14 @@ def get_message_by_id(message_id):
     if not message:
         return fail(404, f"<Message {message_id}> not found")
     return build_success(message.to_json())
+
+
+@api.get("/message")
+def get_all_messages():
+    all_messages = db.session.scalars(select(Message)).all()
+    if not all_messages:
+        return fail(404, f"Unknown error")
+    return build_success([message.to_json() for message in all_messages])
 
 
 @api.get("/message/random")
@@ -146,7 +155,7 @@ def get_images_by_best_tag_match():
             raise ValueError
     except:
         return fail(400, f"Invalid tag list")
-    print(tags)
+    # print(tags)
     q = (
         select(
             image_tags.c.image_id,

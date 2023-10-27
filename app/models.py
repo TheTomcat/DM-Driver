@@ -9,6 +9,8 @@ from typing_extensions import Annotated
 import base64
 import math
 import random
+from PIL import Image as PImage
+from pathlib import Path
 
 image_tags = Table(
     "image_tags",
@@ -36,6 +38,26 @@ def get_image_as_base64(path):
     return data.decode("ascii")
 
 
+def get_image_thumbnail_as_base64(image: "Image", scale):
+    """scale can be a single number - in which case, scale the image up or down by that fraction, or it can be a (width,height) tuple, in which case the image will be resized to fit within that bounding box"""
+    if isinstance(scale, (int, float)):
+        aspect_ratio = scale
+    elif isinstance(scale, (tuple, list)):
+        if len(scale) != 2:
+            raise IndexError("Scale must be a number or an iterable of length 2")
+        aspect_ratio = min(scale[0] / image.dimension_x, scale[1] / image.dimension_y)
+    with open(image.path, "rb") as f:
+        imdata = PImage.open(f)
+        imdata.thumbnail(
+            (
+                int(aspect_ratio * image.dimension_x),
+                int(aspect_ratio * image.dimension_y),
+            )
+        )
+        output = base64.b64encode(imdata.tobytes())
+        return output.decode("ascii")
+
+
 class Image(db.Model, Selector):
     __tablename__ = "images"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -48,19 +70,23 @@ class Image(db.Model, Selector):
     tags: Mapped[list["Tag"]] = relationship(
         back_populates="images", secondary=image_tags
     )
+    directory_id: Mapped[int] = mapped_column(ForeignKey("directories.id"))
+    directory: Mapped["Directory"] = relationship(back_populates="images")
 
-    def get_fullsize_image_data_base64(self, base_path):
-        return get_image_as_base64(base_path + self.filename)
+    def get_fullsize_image_data_base64(self, base_path=None):
+        if base_path is not None:
+            raise DeprecationWarning("BasePath should not be used")
+        return get_image_as_base64(Path(self.directory.path, self.filename))
 
-    def get_thumbnail_image_data_base64(self, base_path):
-        return get_image_as_base64(base_path + "thumbnails\\" + self.filename)
+    def get_thumbnail_image_data_base64(self, base_path=None):
+        if base_path is not None:
+            raise DeprecationWarning("BasePath should not be used")
+        # return get_image_as_base64(base_path + "thumbnails\\" + self.filename)
+        return get_image_thumbnail_as_base64(self, (300, 300))
 
-    # @classmethod
-    # def get_random(cls):
-    #     return select(cls).order_by(func.random())
-
-    def set_path(self, path):
-        self.image_path = path
+    @property
+    def path(self):
+        return Path(self.directory.path, self.filename)
 
     @property
     def url(self):
@@ -78,6 +104,13 @@ class Image(db.Model, Selector):
             "url": self.url,
             "thumbnail": self.url_thumbnail,
         }
+
+
+class Directory(db.Model):
+    __tablename__ = "directories"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    path: Mapped[str] = mapped_column(String(256), index=True, unique=True)
+    images: Mapped[list["Image"]] = relationship(back_populates="directory")
 
 
 class Tag(db.Model):

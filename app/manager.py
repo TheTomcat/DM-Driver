@@ -22,8 +22,8 @@ def redirect_manager():
 @manager.route("/manager/<id>")
 def tag_manager(id):
     image = db.session.scalar(select(Image).where(Image.id == id))
-    b64full = image.get_fullsize_image_data_base64(current_app.config["IMAGE_PATH"])
-    b64thumb = image.get_thumbnail_image_data_base64(current_app.config["IMAGE_PATH"])
+    b64full = image.get_fullsize_image_data_base64()
+    b64thumb = image.get_thumbnail_image_data_base64()
     focus = Focus(image)
     return render_template(
         "manager.html.j2",

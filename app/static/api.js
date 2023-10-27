@@ -53,7 +53,6 @@ apiGetRandomImage = () => {
 
 apiGetMessageById = (message_id) => {
     return apiCall(`/api/message/${message_id}`)
-
 }
 
 apiGetAllMessages = () => {

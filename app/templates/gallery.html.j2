@@ -5,9 +5,9 @@
 {% include 'nav.html.j2' %}
 {% endblock nav %}
 
-{% block kenku %}
+{# {% block kenku %}
 {% include 'kenku.html.j2' %}
-{% endblock kenku %}
+{% endblock kenku %} #}
 
 {% block content %}
 <h1>Gallery</h1>
@@ -41,8 +41,8 @@
         gallery.replaceChildren([]);
 
         if (searchTags.length == 0) return;
-        console.log(searchTags);
-        apiGetImageTagMatch(searchTags.map(tag => tag.id))
+        //console.log(searchTags);
+        apiGetImageTagMatch(searchTags.map(tag => tag.tag_id))
             .then(({ images, tag_list }) => {
                 images.forEach(putImageInGallery)
             })
@@ -66,7 +66,9 @@
     }
 
     addTagToSearchTags = (newTag) => {
-        if (searchTags.find(tag => tag.id === newTag.id) !== undefined) return;
+        console.log(newTag)
+        if (searchTags.find(tag => tag.tag_id === newTag.tag_id) !== undefined) return;
+        //tag = allTags.find(tag => newTag.tag.toLowerCase() == tag.tag.toLowerCase())
         searchTags = [...searchTags, newTag];
         renderTags();
         updateGallery();
@@ -82,7 +84,8 @@
         console.log("asdf")
         const data = new FormData(event.target);
         const tagName = data.get('tagname');
-        searchTags = [...searchTags, tagName];
+        tag = allTags.find(tag => tagName.toLowerCase() == tag.tag.toLowerCase())
+        searchTags = [...searchTags, tag];
         renderTags();
         e.target.children[0].value = "";
     }

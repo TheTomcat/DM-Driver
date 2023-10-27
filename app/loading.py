@@ -24,7 +24,7 @@ def loading_page():
             m = Message.get_random()
         image = db.session.scalar(q)
         message = db.session.scalar(m)
-    imdata = image.get_fullsize_image_data_base64(current_app.config["IMAGE_PATH"])
+    imdata = image.get_fullsize_image_data_base64()  # current_app.config["IMAGE_PATH"])
     focus = Focus(image)
     return render_template(
         "loading.html.j2",
@@ -47,7 +47,7 @@ def backdrop_page():
         else:
             q = Image.get_random()
         image = db.session.scalar(q)
-    imdata = image.get_fullsize_image_data_base64(current_app.config["IMAGE_PATH"])
+    imdata = image.get_fullsize_image_data_base64()  # current_app.config["IMAGE_PATH"])
     focus = Focus(image)
     # Sendign the b64 data makes the page load smoother
     # The background is important (vs other websites where the background is incidental)

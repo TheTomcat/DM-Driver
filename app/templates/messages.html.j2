@@ -16,18 +16,6 @@
         <input autocomplete="off" id="searchbar" name="tagname" placeholder="Filter Messages" />
         <figure>
             <table class="messages">
-                <tr>
-                    <td>1</td>
-                    <td>MessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessageMessage</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>Message</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>Message</td>
-                </tr>
             </table>
         </figure>
     </div>
@@ -38,29 +26,22 @@
 <script>
     const messages = document.querySelector(".messages")
 
-    // Load the tags from the server
+    // Load the messages from the server
 
-    updateSessions = () => {
-        apiGetAllSessions().then(sessions => {
-            console.log(sessions);
-            sessions.forEach(putSessionInGallery);
-        });
+    updateMessages = () => {
+        apiGetAllMessages().then(messages => {
+            messages.forEach(putMessageInList);
+        })
     }
 
-    putSessionInGallery = (session) => {
-        imdiv = document.createElement('article')
-        imdiv.classList.add('gallery-element');
-        header = document.createElement('header')
-        header.innerHTML = session.title;
-        imdiv.appendChild(header);
-        image = document.createElement('img')
-        image.src = `/api/image/${session.image_id}/thumb`
-        imdiv.appendChild(image)
-        footer = document.createElement('footer')
+    putMessageInList = (message) => {
+        mrow = document.createElement('tr')
+        mrow.innerHTML = `<td>${message.message_id}</td><td>${message.message}</td>`
 
-        imdiv.appendChild(footer);
-        gallery.appendChild(imdiv)
+        messages.appendChild(mrow);
     }
-    updateSessions();
+
+    updateMessages();
+
 </script>
 {% endblock script %}
