@@ -1,8 +1,10 @@
+from typing import Optional
 from app import db
 
 from sqlalchemy import Column, Delete, String, Table, ForeignKey, select
 from sqlalchemy.sql.expression import func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.types import BLOB
 from flask import url_for
 from typing_extensions import Annotated
 
@@ -31,6 +33,10 @@ class Selector(object):
     def get_random(cls):
         return select(cls).order_by(func.random())
 
+    @classmethod
+    def get(cls, id):
+        return select(cls).where(cls.id == id)
+
 
 def get_image_as_base64(path):
     with open(path, "rb") as image:
@@ -39,23 +45,44 @@ def get_image_as_base64(path):
 
 
 def get_image_thumbnail_as_base64(image: "Image", scale):
-    """scale can be a single number - in which case, scale the image up or down by that fraction, or it can be a (width,height) tuple, in which case the image will be resized to fit within that bounding box"""
-    if isinstance(scale, (int, float)):
-        aspect_ratio = scale
-    elif isinstance(scale, (tuple, list)):
-        if len(scale) != 2:
-            raise IndexError("Scale must be a number or an iterable of length 2")
-        aspect_ratio = min(scale[0] / image.dimension_x, scale[1] / image.dimension_y)
+    """scale can be a single number - in which case, scale the image up or down by that fraction,
+    or it can be a (width,height) tuple, in which case the image will be resized to fit within that bounding box
+    """
+    # if isinstance(scale, (int, float)):
+    #     aspect_ratio = scale
+    # elif isinstance(scale, (tuple, list)):
+    #     if len(scale) != 2:
+    #         raise IndexError("Scale must be a number or an iterable of length 2")
+    #     aspect_ratio = min(scale[0] / image.dimension_x, scale[1] / image.dimension_y)
     with open(image.path, "rb") as f:
-        imdata = PImage.open(f)
-        imdata.thumbnail(
-            (
-                int(aspect_ratio * image.dimension_x),
-                int(aspect_ratio * image.dimension_y),
-            )
+        x, y = calculate_thumbnail_size(
+            (image.dimension_x, image.dimension_y), scale=scale
         )
+        imdata = PImage.open(f)
+        imdata.thumbnail((x, y))
         output = base64.b64encode(imdata.tobytes())
         return output.decode("ascii")
+
+
+def calculate_thumbnail_size(image_dimension, **dimensions):
+    match dimensions:
+        case {"width": width, "height": height}:
+            scf = min(
+                width / image_dimension[0],
+                height / image_dimension[1],
+            )
+        case {"width": width}:
+            scf = width / image_dimension[0]
+        case {"height": height}:
+            scf = height / image_dimension[1]
+        case {"scale": scale}:
+            scf = scale
+        case _:
+            raise IndexError("Scale must be a number or an iterable of length 2")
+    return (
+        int(scf * image_dimension[0]),
+        int(scf * image_dimension[1]),
+    )
 
 
 class Image(db.Model, Selector):
@@ -113,7 +140,7 @@ class Directory(db.Model):
     images: Mapped[list["Image"]] = relationship(back_populates="directory")
 
 
-class Tag(db.Model):
+class Tag(db.Model, Selector):
     __tablename__ = "tags"
     id: Mapped[int] = mapped_column(primary_key=True)
     tag: Mapped[str] = mapped_column(String(30))
@@ -153,6 +180,104 @@ class Session(db.Model):
             "title": self.title,
             "message_id": self.message_id,
             "image_id": self.image_id,
+        }
+
+
+class Combat(db.Model, Selector):
+    __tablename__ = "combat"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(100), insert_default="")
+    participants: Mapped[list["Participant"]] = relationship(back_populates="combat")
+
+    def to_json(self):
+        return {
+            "combat_id": self.id,
+            "title": self.title,
+            "participants": [
+                participant.to_json() for participant in self.participants
+            ],
+            #             "participants": {
+            #     participant.id: participant.to_json()
+            #     for participant in self.participants
+            # },
+        }
+
+
+class Participant(db.Model, Selector):
+    __tablename__ = "participants"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), insert_default="")
+    combat_id: Mapped[int] = mapped_column(ForeignKey("combat.id"))
+    entity_id: Mapped[int] = mapped_column(ForeignKey("entities.id"), nullable=True)
+    combat: Mapped["Combat"] = relationship(back_populates="participants")
+
+    entity: Mapped["Entity"] = relationship()
+
+    is_visible: Mapped[bool] = mapped_column(default=True)
+    is_PC: Mapped[bool] = mapped_column(default=False)
+    damage: Mapped[int] = mapped_column(default=0)
+    max_hp: Mapped[int] = mapped_column(default=0)
+    ac: Mapped[int] = mapped_column(default=0)
+    initiative: Mapped[int] = mapped_column(default=10)
+    initiative_modifier: Mapped[int] = mapped_column(default=0, nullable=True)
+    conditions: Mapped[str] = mapped_column(String(256), default="")
+    has_reaction: Mapped[bool] = mapped_column(default=True)
+
+    colour: Mapped[str] = mapped_column(String(10), nullable=True)
+    image_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("images.id"), nullable=True
+    )
+    image: Mapped[Optional[Image]] = relationship("Image")
+
+    def to_json(self):
+        return {
+            "participant_id": self.id,
+            "combat_id": self.combat_id,
+            "entity_id": self.entity_id,
+            "name": self.name,
+            "is_visible": self.is_visible,
+            "damage": self.damage,
+            "max_hp": self.max_hp,
+            "ac": self.ac,
+            "initiative": self.initiative,
+            "initiative_modifier": self.initiative_modifier,
+            "conditions": self.conditions.split(","),
+            "has_reaction": self.has_reaction,
+            "colour": self.colour,
+            "image_id": self.image_id,
+        }
+
+
+class Entity(db.Model, Selector):
+    __tablename__ = "entities"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), insert_default="")
+    hit_dice: Mapped[str] = mapped_column(String(50), insert_default="")
+    ac: Mapped[int] = mapped_column(default=10)
+    cr: Mapped[str] = mapped_column(String(10), default="")
+    initiative_modifier: Mapped[int] = mapped_column(default=0)
+    data: Mapped[str] = mapped_column(BLOB, nullable=True)
+    is_PC: Mapped[bool] = mapped_column(default=False)
+    image_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("images.id"), nullable=True
+    )
+    image: Mapped[Optional[Image]] = relationship("Image")
+    source: Mapped[str] = mapped_column(String(10), nullable=True)
+    source_page: Mapped[int] = mapped_column(nullable=True)
+
+    def to_json(self):
+        return {
+            "entity_id": self.id,
+            "name": self.name,
+            "hit_dice": self.hit_dice,
+            "ac": self.ac,
+            "cr": self.cr,
+            "initiative_modifier": self.initiative_modifier,
+            "is_PC": self.is_PC,
+            "image_id": self.image_id,
+            "source": self.source,
+            "source_page": self.source_page,
+            "data": self.data,
         }
 
 

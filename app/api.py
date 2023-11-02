@@ -1,6 +1,16 @@
 from flask import Blueprint, current_app, render_template, request, send_file
 from sqlalchemy import select, func, text
-from app.models import Image, Tag, Message, image_tags, Session
+from app.models import (
+    Combat,
+    Entity,
+    Image,
+    Participant,
+    Tag,
+    Message,
+    calculate_thumbnail_size,
+    image_tags,
+    Session,
+)
 from io import BytesIO
 from PIL import Image as PImage
 from app import db
@@ -30,6 +40,27 @@ def get_all_tags():
     return build_success([tag.to_json() for tag in all_tags])
 
 
+@api.post("tags")
+def create_tag():
+    content_type = request.headers.get("Content-Type")
+    if content_type != "application/json":
+        return fail(415, "Invalid request, unsupported Content-Type")
+    tag_data = request.json
+    try:
+        title = tag_data.get("tag")
+        tag = db.session.scalar(select(Tag).where(Tag.tag == title.lower()))
+        if not tag:
+            tag = Tag(tag=title.lower())
+            db.session.add(tag)
+            db.session.commit()
+
+            return build_success(tag.to_json())
+        else:
+            return fail(401, "Tag already exists")
+    except Exception as e:
+        return fail(400, "An error occured {e}")
+
+
 @api.get("/image/<image_id>/tag")
 def get_tags_of_image(image_id):
     image = db.session.scalar(select(Image).where(Image.id == image_id))
@@ -37,6 +68,37 @@ def get_tags_of_image(image_id):
         return fail(404, f"<Image {image_id}> not found")
     tags = [tag.to_json() for tag in image.tags]
     return build_success(tags)
+
+
+@api.put("/image/<image_id>/tag/<tag_id>")
+def add_tag_id_to_image(image_id, tag_id):
+    image = db.session.scalar(Image.get(image_id))
+    if not image:
+        return fail(404, f"<Image {image_id}> not found")
+    tag = db.session.scalar(Tag.get(tag_id))
+    if not tag:
+        return fail(404, f"<Tag {tag_id} not found")
+    if tag in image.tags:
+        return fail(405, f'<Image {image_id}> already tagged with <Tag {tag_id}>"')
+    image.tags.append(tag)
+    db.session.add(tag)
+    db.session.commit()
+    return build_success(image.to_json())
+
+
+@api.delete("/image/<image_id>/tag/<tag_id>")
+def remove_tag_id_from_image(image_id, tag_id):
+    image = db.session.scalar(Image.get(image_id))
+    if not image:
+        return fail(404, f"<Image {image_id}> not found")
+    tag = db.session.scalar(Tag.get(tag_id))
+    if not tag:
+        return fail(404, f"<Tag {tag_id} not found")
+    if tag not in image.tags:
+        return fail(405, f'<Image {image_id}> not tagged with <Tag {tag_id}>"')
+    image.tags.remove(tag)
+    db.session.commit()
+    return build_success(image.to_json())
 
 
 @api.post("/image/<image_id>/tag/<tag_name>")
@@ -126,24 +188,33 @@ def get_fullsize_image(image_id):
     image = db.session.scalar(select(Image).where(Image.id == image_id))
     if not image:
         return fail(404, f"<Image {image_id}> not found")
-    image_data = PImage.open(current_app.config["IMAGE_PATH"] + image.filename)
-    image_io = BytesIO()
-    image_data.save(image_io, "png")
-    image_io.seek(0)
+    with PImage.open(image.path) as image_data:
+        image_io = BytesIO()
+        image_data.save(image_io, "png")
+        image_io.seek(0)
     return send_file(image_io, mimetype="image/png", download_name=image.filename)
 
 
 @api.get("/image/<image_id>/thumb")
 def get_thumbnail_image(image_id):
+    args = {
+        key: float(request.args.get(key))
+        for key in ["width", "height", "scale"]
+        if request.args.get(key)
+    }
+    if not args:
+        args = {"width": 300}
     image = db.session.scalar(select(Image).where(Image.id == image_id))
     if not image:
         return fail(404, f"<Image {image_id}> not found")
-    image_data = PImage.open(
-        current_app.config["IMAGE_PATH"] + "thumbnails\\" + image.filename
-    )
-    image_io = BytesIO()
-    image_data.save(image_io, "png")
-    image_io.seek(0)
+    with PImage.open(image.path) as im:
+        x, y = calculate_thumbnail_size((image.dimension_x, image.dimension_y), **args)
+
+        im.thumbnail((x, y))
+
+        image_io = BytesIO()
+        im.save(image_io, "png")
+        image_io.seek(0)
     return send_file(image_io, mimetype="image/png", download_name="t" + image.filename)
 
 
@@ -226,3 +297,133 @@ def get_all_sessions():
     sessions = select(Session)
     all_sessions = db.session.scalars(sessions).all()
     return build_success([session.to_json() for session in all_sessions])
+
+
+@api.get("/combat/<combat_id>")
+def get_combat_by_id(combat_id):
+    combat = db.session.scalar(select(Combat).where(Combat.id == combat_id))
+    if not combat:
+        return fail(404, f"Combat {combat_id} not found.")
+    return build_success(combat.to_json())
+
+
+@api.get("/combat")
+def get_all_combats():
+    combats = db.session.scalars(select(Combat)).all()
+    # if not combats:
+    #     return fail(404, f"Combats not found.")
+    return build_success([combat.to_json() for combat in combats])
+
+
+@api.post("/combat")
+def create_new_combat():
+    content_type = request.headers.get("Content-Type")
+    if content_type != "application/json":
+        return fail(415, "Invalid request, unsupported Content-Type")
+    combat = request.json
+    try:
+        title = combat.get("title")
+        c = Combat(title=title)
+        db.session.add(c)
+        db.session.commit()
+        return build_success(c.to_json())
+    except IndexError as e:
+        return fail(401, "Invalid request, please supply {title:'title'}")
+
+
+@api.put("/combat/participant")
+def add_participant():
+    content_type = request.headers.get("Content-Type")
+    if content_type != "application/json":
+        return fail(415, "Invalid request, unsupported Content-Type")
+    participant = request.json
+    if not isinstance(participant, dict):
+        return fail(401, "Invalid request")
+    try:
+        print(participant)
+        p = Participant(**participant)
+        db.session.add(p)
+        db.session.commit()
+        return build_success(p.to_json())
+    except Exception as e:
+        return fail(400, f"An error occurred: {e}")
+
+
+@api.delete("/combat/participant")
+def remove_participant():
+    content_type = request.headers.get("Content-Type")
+    if content_type != "application/json":
+        return fail(415, "Invalid request, unsupported Content-Type")
+    participant = request.json
+    if not isinstance(participant, dict) and "participant_id" not in participant:
+        return fail(401, "Invalid request")
+    try:
+        participant = db.session.scalar(
+            Participant.get(participant.get("participant_id"))
+        )
+        db.session.delete(participant)
+        db.session.commit()
+        return build_success()
+    except Exception as e:
+        return fail(400, f"An error occured {e}")
+
+
+@api.patch("/combat/participant")
+def modify_participant():
+    content_type = request.headers.get("Content-Type")
+    if content_type != "application/json":
+        return fail(415, "Invalid request, unsupported Content-Type")
+    participant_data = request.json
+    if (
+        not isinstance(participant_data, dict)
+        and "participant_id" not in participant_data
+    ):
+        return fail(401, "Invalid request")
+    try:
+        participant = db.session.scalar(
+            Participant.get(participant_data.get("participant_id"))
+        )
+        for key, val in participant_data.items():
+            if key == "participant_id":
+                continue
+            if key == "conditions":
+                val = ",".join(val)
+            setattr(participant, key, val)
+        db.session.commit()
+        return build_success(participant.to_json())
+    except Exception as e:
+        return fail(400, f"An error occured {e}")
+
+
+@api.get("/participant/<participant_id>")
+def get_participant_by_id(participant_id):
+    participant = db.session.scalar(
+        select(Participant).where(Participant.id == participant_id)
+    )
+    if not participant:
+        return fail(404, f"Participant {participant_id} not found.")
+    return build_success(participant.to_json())
+
+
+@api.get("/participant")
+def get_all_participants():
+    participants = db.session.scalars(select(Participant)).all()
+    # if not participants:
+    #     return fail(404, f"Participants not found.")
+    return build_success([participant.to_json() for participant in participants])
+
+
+@api.get("/entity/<entity_id>")
+def get_entity_by_id(entity_id):
+    entity = db.session.scalar(select(Entity).where(Entity.id == entity_id))
+    if not entity:
+        return fail(404, f"Entity {entity_id} not found.")
+    return build_success(entity.to_json())
+
+
+@api.get("/entity")
+def get_all_entities():
+    entities = db.session.scalars(select(Entity)).all()
+    # if not entities:
+    #     return fail(404, f"entities not found.")
+    return build_success([entity.to_json() for entity in entities])

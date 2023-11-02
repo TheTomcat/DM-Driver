@@ -1,13 +1,15 @@
+from functools import partial
 from flask import Blueprint, current_app
 from flask.cli import with_appcontext
 import glob
 import click
+import json
 from pathlib import Path
 from utils.thumbnail import parallel
 from utils.dhash import im_hash
 from sqlalchemy import select, delete
 from app import db
-from app.models import Image, Message
+from app.models import Image, Message, Entity
 from PIL import Image as PImage
 
 cli = Blueprint("cli", __name__)
@@ -108,3 +110,45 @@ def load_messages(message_file, truncate_left, clear, silent):
         db.session.add(m)
     sprint(silent, f"[load-messages] Loaded {len(lines)} new messages.")
     db.session.commit()
+
+
+@cli.cli.command("parse-compendium")
+@click.option("-f", "--compendium_file", help="The filename of the compendium to parse")
+@click.option("-s", "--silent", is_flag=True, default=False, help="Supress all output")
+def parse_compendium(compendium_file, silent):
+    if not compendium_file:
+        return
+    with open(compendium_file, "r") as f:
+        data = json.load(f)
+    for monster in data["monster"]:
+        try:
+            m = Entity(
+                name=monster["name"],
+                hit_dice=monster["hp"]["formula"],
+                ac=find_max(monster, "ac"),
+                cr=(
+                    monster["cr"]
+                    if isinstance(monster["cr"], str)
+                    else monster["cr"]["cr"]
+                ),
+                initiative_modifier=monster["dex"],
+                is_PC=False,
+                source=monster["source"],
+                source_page=monster["page"],
+            )
+        except Exception as e:
+            print(monster)
+            raise e
+        sprint(silent, f"[parse-compendium] Parsing {monster['name']}")
+        db.session.add(m)
+    db.session.commit()
+
+
+def find_max(data, index):
+    def get_maximum_element_from_json(element):
+        if isinstance(element, int):
+            return element
+        else:
+            return element[index]
+
+    return max(map(get_maximum_element_from_json, data[index]))
