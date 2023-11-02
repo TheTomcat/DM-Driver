@@ -99,6 +99,7 @@ class Image(db.Model, Selector):
     )
     directory_id: Mapped[int] = mapped_column(ForeignKey("directories.id"))
     directory: Mapped["Directory"] = relationship(back_populates="images")
+    # attribution: Mapped[str] = mapped_column(String(300), nullable=True)
 
     def get_fullsize_image_data_base64(self, base_path=None):
         if base_path is not None:
