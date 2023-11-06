@@ -36,6 +36,10 @@ def create_app(config_class=Config):
 
     app.register_blueprint(api, url_prefix="/api")
 
+    @app.get('/')
+    def test():
+        return 'Yes'
+
     @app.after_request
     def after_request(response):
         # Werkzeu sometimes does not flush the request body so we do it here

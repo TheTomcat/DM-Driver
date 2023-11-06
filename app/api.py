@@ -40,7 +40,7 @@ def get_all_tags():
     return build_success([tag.to_json() for tag in all_tags])
 
 
-@api.post("tags")
+@api.post("/tags")
 def create_tag():
     content_type = request.headers.get("Content-Type")
     if content_type != "application/json":
@@ -188,11 +188,16 @@ def get_fullsize_image(image_id):
     image = db.session.scalar(select(Image).where(Image.id == image_id))
     if not image:
         return fail(404, f"<Image {image_id}> not found")
-    with PImage.open(image.path) as image_data:
-        image_io = BytesIO()
-        image_data.save(image_io, "png")
-        image_io.seek(0)
-    return send_file(image_io, mimetype="image/png", download_name=image.filename)
+    try:
+        with PImage.open(image.path) as image_data:
+            image_io = BytesIO()
+            image_data.save(image_io, "png")
+            image_io.seek(0)
+        return send_file(image_io, mimetype="image/png", download_name=image.filename)
+    except FileNotFoundError:
+        return fail(404, f"<Image {image_id}> not found")
+    except Exception as e:
+        return fail(400, f"Unknown error {e}")
 
 
 @api.get("/image/<image_id>/thumb")
@@ -207,16 +212,20 @@ def get_thumbnail_image(image_id):
     image = db.session.scalar(select(Image).where(Image.id == image_id))
     if not image:
         return fail(404, f"<Image {image_id}> not found")
-    with PImage.open(image.path) as im:
-        x, y = calculate_thumbnail_size((image.dimension_x, image.dimension_y), **args)
+    try:
+        with PImage.open(image.path) as im:
+            x, y = calculate_thumbnail_size((image.dimension_x, image.dimension_y), **args)
 
-        im.thumbnail((x, y))
+            im.thumbnail((x, y))
 
-        image_io = BytesIO()
-        im.save(image_io, "png")
-        image_io.seek(0)
-    return send_file(image_io, mimetype="image/png", download_name="t" + image.filename)
-
+            image_io = BytesIO()
+            im.save(image_io, "png")
+            image_io.seek(0)
+        return send_file(image_io, mimetype="image/png", download_name="t" + image.filename)
+    except FileNotFoundError:
+        return fail(404, f"<Image {image_id}> not found")
+    except Exception as e:
+        return fail(400, f"Unknown error {e}")
 
 @api.get("/image")
 def get_images_by_best_tag_match():
@@ -427,3 +436,46 @@ def get_all_entities():
     # if not entities:
     #     return fail(404, f"entities not found.")
     return build_success([entity.to_json() for entity in entities])
+
+
+@api.put("/entity")
+def add_entity():
+    content_type = request.headers.get("Content-Type")
+    if content_type != "application/json":
+        return fail(415, "Invalid request, unsupported Content-Type")
+    entity = request.json
+    if not isinstance(entity, dict):
+        return fail(401, "Invalid request")
+    try:
+        # print(entity)
+        e = Entity(**entity)
+        db.session.add(e)
+        db.session.commit()
+        return build_success(e.to_json())
+    except Exception as error:
+        return fail(400, f"An error occurred: {error}")
+    
+
+@api.patch("/entity")
+def modify_entity():
+    content_type = request.headers.get("Content-Type")
+    if content_type != "application/json":
+        return fail(415, "Invalid request, unsupported Content-Type")
+    entity_data = request.json
+    if (
+        not isinstance(entity_data, dict)
+        and "entity_id" not in entity_data
+    ):
+        return fail(401, "Invalid request")
+    try:
+        entity = db.session.scalar(
+            Entity.get(entity_data.get("entity_id"))
+        )
+        for key, val in entity_data.items():
+            if key == "entity_id":
+                continue
+            setattr(entity, key, val)
+        db.session.commit()
+        return build_success(entity.to_json())
+    except Exception as e:
+        return fail(400, f"An error occured {e}")

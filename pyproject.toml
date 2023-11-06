@@ -19,6 +19,7 @@ click = "^8.1.7"
 imutils = "^0.5.4"
 opencv-python = "^4.8.1.78"
 black = "^23.9.1"
+fastapi = {extras = ["all"], version = "^0.104.1"}
 
 
 [build-system]
